@@ -1,8 +1,20 @@
 {
   "name": "create-iydheko-stack",
-  "module": "index.ts",
+  "version": "0.1.0",
+  "description": "A quick starter template by Ferdinan Iydheko",
+  "bin": {
+    "create-iydheko-stack": "./bin/index.js"
+  },
   "type": "module",
+  "main": "bin/index.js",
   "private": true,
+  "scripts": {
+    "dev": "node bin/index.js",
+    "test": "echo 'Test later!'"
+  },
+  "keywords": ["react", "tanstack", "cli", "starter", "iydheko", "Ferdinan Iydheko"],
+  "author": "Ferdinan Iydheko",
+  "license": "MIT",
   "devDependencies": {
     "@types/bun": "latest"
   },
