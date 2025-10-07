@@ -32,11 +32,22 @@ program
   .description('A quick template starter by Iydheko')
   .argument('[projectName]', 'name of the project')
   .action(async (projectNameFromArgs: string) => {
+    const logo = `
+      _     
+  ___| |___ 
+ / __| / __|
+| (__| \\__ \\
+ \\___|_|___/
+     |_|    
+
+create-iydheko-stack
+`;
+    console.log(chalk.blue(logo));
     try {
       // --- PACKAGE MANAGER DETECTION ---
       const userAgent = process.env.npm_config_user_agent;
       const pm = userAgent?.split('/')[0] || 'npm';
-      console.log(chalk.cyan(`Detected package manager: ${pm}`));
+      // console.log(prefix, chalk.cyan(`Detected package manager: ${pm}`));
 
       let execCmd: string;
       if (pm === 'bun') execCmd = 'bunx';
@@ -57,13 +68,13 @@ program
           },
           {
             onCancel: () => {
-              console.log(chalk.yellow('Cancelled?? okay, fine!'));
+              console.log(chalk.yellow('[◉] Cancelled?? okay, fine!'));
               process.exit(0);
             },
           },
         );
         if (!res.name) {
-          console.log(chalk.red('Project name cannot be empty.'));
+          console.log(chalk.red('[◉] Project name cannot be empty.'));
           process.exit(1);
         }
         projectName = res.name;
@@ -71,7 +82,7 @@ program
 
       const responses: PromptResponses = await prompts(
         [
-          {
+          {           
             type: 'select',
             name: 'flavor',
             message: 'What kind of project do you want to build?',
@@ -148,7 +159,7 @@ program
         ],
         {
           onCancel: () => {
-            console.log(chalk.yellow('Cancelled?? okay, fine!'));
+            console.log(chalk.yellow('[◉] Cancelled?? okay, fine!'));
             process.exit(0);
           },
         },
@@ -157,23 +168,31 @@ program
       const { flavor, style, db, optionals } = responses;
       const root = path.join(process.cwd(), projectName);
 
-      console.log(chalk.blue(`
-Scaffolding project with flavor: ${flavor} using ${pm}...`));
+      console.log();
+      console.log(chalk.blue(`[◉] Scaffolding project with flavor: ${flavor} using ${pm}...`));
 
       // 1. Delegate scaffolding to official CLIs
       if (flavor === 'tanstack-start') {
-        console.log(chalk.yellow('TanStack Start requires interactive setup. Please follow the prompts from the official CLI.'));
+        console.log(chalk.yellow('[◉] Initializing TanStack Start...'));
+        console.log(chalk.gray('┌' + '─'.repeat(50)));
         await execa(pm, ['create', '@tanstack/start', projectName], { stdio: 'inherit' });
+        console.log(chalk.gray('└' + '─'.repeat(50)));
       } else if (flavor === 'tanstack-router-spa' || flavor === 'vite-minimal') {
+        console.log(chalk.yellow('[◉] Initializing Vite...'));
+        console.log(chalk.gray('┌' + '─'.repeat(50)));
         const vitePkg = pm === 'npm' ? 'vite@latest' : 'vite';
         await execa(pm, ['create', vitePkg, projectName, '--template', 'react-ts'], { stdio: 'inherit' });
+        console.log(chalk.gray('└' + '─'.repeat(50)));
       } else if (flavor === 'electron') {
+        console.log(chalk.yellow('[◉] Initializing Electron + Vite...'));
+        console.log(chalk.gray('┌' + '─'.repeat(50)));
         const electronVitePkg = pm === 'npm' ? '@electron-vite/app@latest' : '@electron-vite/app';
         await execa(pm, ['create', electronVitePkg, projectName], { stdio: 'inherit' });
+        console.log(chalk.gray('└' + '─'.repeat(50)));
       }
 
-      console.log(chalk.blue(`
-Project scaffolded. Now adding Iydheko Stack extras...`));
+      console.log();
+      console.log(chalk.blue(`[◉] Project scaffolded. Now adding Iydheko Stack extras...`));
 
       // 2. Read the generated package.json
       const pkgPath = path.join(root, 'package.json');
@@ -185,7 +204,7 @@ Project scaffolded. Now adding Iydheko Stack extras...`));
 
       // 3. Overwrite/update specific dependencies to their latest versions
       if (style === 'tailwindcss' || style === 'tailwindcss-shadcn') {
-        console.log(chalk.blue('Adding Tailwind CSS v4 dependencies...'));
+        console.log(chalk.blue('[◉] Adding Tailwind CSS v4 dependencies...'));
         const latestTailwind = await getLatestVersion('tailwindcss');
         if (pkg.dependencies['tailwindcss']) delete pkg.dependencies['tailwindcss'];
         pkg.devDependencies['tailwindcss'] = `^${latestTailwind}`;
@@ -231,7 +250,7 @@ Project scaffolded. Now adding Iydheko Stack extras...`));
 
       // 5. Fetch latest versions for these other dependencies and add to pkg object
       if (depsToAdd.length > 0) {
-        console.log(chalk.blue('Fetching latest versions for additional dependencies...'));
+        console.log(chalk.blue('[◉] Fetching latest versions for additional dependencies...'));
         await Promise.all(
           depsToAdd.map(async (dep) => {
             const version = await getLatestVersion(dep.name);
@@ -249,7 +268,7 @@ Project scaffolded. Now adding Iydheko Stack extras...`));
       await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
       
       // 7. Add config files and templates
-      console.log(chalk.blue('Adding config files and templates...'));
+      console.log(chalk.blue('[◉] Adding config files and templates...'));
       
       if (db.includes('neon') || db.includes('drizzle')) {
         const drizzleConfig = `import type { Config } from 'drizzle-kit';
@@ -275,16 +294,18 @@ export const users = pgTable('users', {
       }
 
       // 8. Run final commands
-      console.log(chalk.blue(`
-Initializing git and installing all dependencies using ${pm}...`));
+      console.log();
+      console.log(chalk.blue(`[◉] Initializing git and installing all dependencies using ${pm}...`));
+      console.log(chalk.gray('┌' + '─'.repeat(50)));
       await execa('git', ['init'], { cwd: root });
       await execa(pm, ['install'], { cwd: root, stdio: 'inherit' });
+      console.log(chalk.gray('└' + '─'.repeat(50)));
 
       if (style === 'tailwindcss' || style === 'tailwindcss-shadcn') {
         const isViteProject = flavor === 'tanstack-start' || flavor === 'tanstack-router-spa' || flavor === 'vite-minimal';
 
         if (isViteProject) {
-          console.log(chalk.blue('Configuring Tailwind CSS for Vite...'));
+          console.log(chalk.blue('[◉] Configuring Tailwind CSS for Vite...'));
           const viteConfigPath = path.join(root, 'vite.config.ts');
           try {
             let viteConfigContent = await fs.readFile(viteConfigPath, 'utf-8');
@@ -298,7 +319,7 @@ Initializing git and installing all dependencies using ${pm}...`));
               await fs.writeFile(viteConfigPath, viteConfigContent);
             }
           } catch (e) {
-            console.error(chalk.red('Failed to configure vite.config.ts for Tailwind CSS.'), e);
+            console.error(chalk.red('[◉] Failed to configure vite.config.ts for Tailwind CSS.'), e);
           }
 
           const cssFilePaths = [
@@ -319,11 +340,11 @@ Initializing git and installing all dependencies using ${pm}...`));
             } catch (e) {}
           }
           if (!cssFileConfigured) {
-            console.error(chalk.red('Could not find a CSS file (styles.css, index.css, or app.css) in src/ to add Tailwind import.'));
+            console.error(chalk.red('[◉] Could not find a CSS file (styles.css, index.css, or app.css) in src/ to add Tailwind import.'));
           }
 
         } else {
-          console.log(chalk.blue('Configuring Tailwind CSS for PostCSS...'));
+          console.log(chalk.blue('[◉] Configuring Tailwind CSS for PostCSS...'));
           const postcssConfig = `module.exports = {\n  plugins: {\n    '@tailwindcss/postcss': {},\n  },\n};`;
           await fs.writeFile(path.join(root, 'postcss.config.js'), postcssConfig);
           
@@ -335,26 +356,29 @@ Initializing git and installing all dependencies using ${pm}...`));
                 await fs.writeFile(cssFilePath, cssContent);
               }
             } catch (e) {
-                console.error(chalk.red('Failed to add @import "tailwindcss" to CSS file.'), e);
+                console.error(chalk.red('[◉] Failed to add @import "tailwindcss" to CSS file.'), e);
             }
         }
       }
       if (style === 'tailwindcss-shadcn') {
-        await execa(execCmd, ['shadcn-ui@latest', 'init'], { cwd: root, stdio: 'inherit' });
+        console.log(chalk.yellow('[◉] Initializing shadcn/ui...'));
+        console.log(chalk.gray('┌' + '─'.repeat(50)));
+        await execa(execCmd, ['shadcn@latest', 'init'], { cwd: root, stdio: 'inherit' });
+        console.log(chalk.gray('└' + '─'.repeat(50)));
       }
       if (flavor === 'tanstack-router-spa' || flavor === 'tanstack-start') {
         // TanStack Router is usually added by the starter, but init can be useful
         // await execa(execCmd, ['@tanstack/router-cli@latest', 'init'], { cwd: root, stdio: 'inherit' });
       }
 
-      console.log(chalk.green(`
-Yeay! ${projectName} siap dengan Iydheko Stack.`));
-      console.log(chalk.blue(`Sekarang, ketik: cd ${projectName} && ${pm} run dev`));
-      if (db.length > 0 && db[0] !== 'none') console.log(chalk.yellow('DB setup: Jangan lupa atur .env dengan DATABASE_URL lo.'));
+      console.log();
+      console.log(chalk.green(`[◉] Yeay! ${projectName} siap dengan Iydheko Stack.`));
+      console.log(chalk.blue(`[◉] Sekarang, ketik: cd ${projectName} && ${pm} run dev`));
+      if (db.length > 0 && db[0] !== 'none') console.log(chalk.yellow('[◉] DB setup: Jangan lupa atur .env dengan DATABASE_URL lo.'));
 
     } catch (error) {
-      console.error(chalk.red(`
-An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      console.log();
+      console.error(chalk.red(`[◉] An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`));
       process.exit(1);
     }
   });
