@@ -1,24 +1,39 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "create-iydheko-stack",
   "version": "0.1.0",
   "description": "A quick starter template by Ferdinan Iydheko",
   "bin": {
-    "create-iydheko-stack": "./bin/index.js"
+    "create-iydheko-stack": "./dist/bin/index.js"
   },
   "type": "module",
-  "main": "bin/index.js",
+  "main": "dist/bin/index.js",
   "private": true,
   "scripts": {
-    "dev": "node bin/index.js",
-    "test": "echo 'Test later!'"
+    "build": "tsc",
+    "dev": "tsx bin/index.ts",
+    "start": "node dist/bin/index.js",
+    "test": "echo 'Add tests later!'"
   },
   "keywords": ["react", "tanstack", "cli", "starter", "iydheko", "Ferdinan Iydheko"],
   "author": "Ferdinan Iydheko",
   "license": "MIT",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/chalk": "^2.2.4",
+    "@types/commander": "^2.12.5",
+    "@types/execa": "^2.0.2",
+    "@types/node": "^24.6.2",
+    "@types/prompts": "^2.4.9",
+    "tsx": "^4.20.6"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.1",
+    "execa": "^9.6.0",
+    "prompts": "^2.4.2"
   }
 }

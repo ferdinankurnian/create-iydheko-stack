@@ -1,4 +1,43 @@
 # create-iydheko-stack
+> This project is still in WIP, so it's not ready to use yet!
+
+```
+                     _             _           _ _          _                   _             _    
+  ___ _ __ ___  __ _| |_ ___      (_)_   _  __| | |__   ___| | _____        ___| |_ __ _  ___| | __
+ / __| '__/ _ \/ _` | __/ _ \_____| | | | |/ _` | '_ \ / _ \ |/ / _ \ _____/ __| __/ _` |/ __| |/ /
+| (__| | |  __/ (_| | ||  __/_____| | |_| | (_| | | | |  __/   < (_) |_____\__ \ || (_| | (__|   < 
+ \___|_|  \___|\__,_|\__\___|     |_|\__, |\__,_|_| |_|\___|_|\_\___/      |___/\__\__,_|\___|_|\_\
+                                     |___/                                                         
+```
+
+`create-iydheko-stack` is a template starter with Tanstack Start by default. This provides a quick installation for Tailwind CSS, shadcn, All Tanstack products, zod, databases, etc. 
+
+# Usage
+> Wait, since this project is still didn't pushed to npm registry, so you can't use these commands yet, sorry!
+
+To create a project, run with your favourite package manager:
+
+npm
+```bash
+npx create-iydheko-stack
+```
+
+bun
+```bash
+bunx create-iydheko-stack
+```
+
+pnpm
+```bash
+pnpm dlx create-iydheko-stack
+```
+
+yarn
+```bash
+yarn dlx create-iydheko-stack
+```
+
+# Run from source
 
 To install dependencies:
 
@@ -9,7 +48,12 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun dev
 ```
 
-This project was created using `bun init` in bun v1.2.22. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+or
+
+
+```bash
+bun dev my-projects
+```
