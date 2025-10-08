@@ -173,25 +173,37 @@ create-iydheko-stack
 
       // 1. Delegate scaffolding to official CLIs
       if (flavor === 'tanstack-start') {
+        console.log();
         console.log(chalk.yellow('[◉] Initializing TanStack Start...'));
         console.log(chalk.gray('┌' + '─'.repeat(50)));
+        console.log();
         await execa(pm, ['create', '@tanstack/start', projectName], { stdio: 'inherit' });
+        console.log();
         console.log(chalk.gray('└' + '─'.repeat(50)));
+        console.log();
       } else if (flavor === 'tanstack-router-spa' || flavor === 'vite-minimal') {
+        console.log();
         console.log(chalk.yellow('[◉] Initializing Vite...'));
         console.log(chalk.gray('┌' + '─'.repeat(50)));
+        console.log();
         const vitePkg = pm === 'npm' ? 'vite@latest' : 'vite';
         await execa(pm, ['create', vitePkg, projectName, '--template', 'react-ts'], { stdio: 'inherit' });
+        console.log();
         console.log(chalk.gray('└' + '─'.repeat(50)));
+        console.log();
       } else if (flavor === 'electron') {
+        console.log();
         console.log(chalk.yellow('[◉] Initializing Electron + Vite...'));
+        console.log();
         console.log(chalk.gray('┌' + '─'.repeat(50)));
+        console.log();
         const electronVitePkg = pm === 'npm' ? '@electron-vite/app@latest' : '@electron-vite/app';
         await execa(pm, ['create', electronVitePkg, projectName], { stdio: 'inherit' });
+        console.log();
         console.log(chalk.gray('└' + '─'.repeat(50)));
+        console.log();
       }
 
-      console.log();
       console.log(chalk.blue(`[◉] Project scaffolded. Now adding Iydheko Stack extras...`));
 
       // 2. Read the generated package.json
@@ -266,6 +278,67 @@ create-iydheko-stack
 
       // 6. Write the updated package.json back
       await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
+
+      // --- Create .env and .env.example files ---
+      const envVars = [];
+      if (db.includes('neon') || db.includes('drizzle')) {
+        envVars.push({
+          key: 'DATABASE_URL',
+          value: '"postgresql://user:password@host:port/db"',
+          comment: '# Neon/Drizzle connection string',
+        });
+      }
+      if (db.includes('convex')) {
+        envVars.push(
+          {
+            key: 'CONVEX_URL',
+            value: '""',
+            comment: '# Populated by `npx convex dev`',
+          },
+          {
+            key: 'CONVEX_DEPLOYMENT',
+            value: '""',
+            comment: '# Populated by `npx convex dev`',
+          },
+        );
+      }
+      if (optionals.includes('better-auth')) {
+        envVars.push(
+          {
+            key: 'BETTER_AUTH_URL',
+            value: '"http://localhost:3000"',
+            comment: '# The base URL of your application',
+          },
+          {
+            key: 'BETTER_AUTH_SECRET',
+            value: '"replace_this_with_a_long_random_string"',
+            comment: '# Generate with `npx @better-auth/cli secret`',
+          },
+        );
+      }
+
+      if (envVars.length > 0) {
+        console.log(chalk.blue('[◉] Creating .env and .env.example files...'));
+
+        const envExampleContent = envVars.map(v => `${v.key}=`).join('\n');
+        const envContent = envVars.map(v => `${v.comment}\n${v.key}=${v.value}`).join('\n\n');
+
+        await fs.writeFile(path.join(root, '.env.example'), envExampleContent);
+        await fs.writeFile(path.join(root, '.env'), envContent);
+
+        // Add .env to .gitignore
+        const gitignorePath = path.join(root, '.gitignore');
+        try {
+          let gitignoreContent = await fs.readFile(gitignorePath, 'utf-8');
+          if (!gitignoreContent.includes('\n.env')) {
+            gitignoreContent += '\n.env';
+            await fs.writeFile(gitignorePath, gitignoreContent);
+          }
+        } catch (e) {
+          // .gitignore doesn't exist, create it
+          await fs.writeFile(gitignorePath, '.env');
+        }
+      }
       
       // 7. Add config files and templates
       console.log(chalk.blue('[◉] Adding config files and templates...'));
@@ -297,9 +370,12 @@ export const users = pgTable('users', {
       console.log();
       console.log(chalk.blue(`[◉] Initializing git and installing all dependencies using ${pm}...`));
       console.log(chalk.gray('┌' + '─'.repeat(50)));
+      console.log();
       await execa('git', ['init'], { cwd: root });
       await execa(pm, ['install'], { cwd: root, stdio: 'inherit' });
+      console.log();
       console.log(chalk.gray('└' + '─'.repeat(50)));
+      console.log();
 
       if (style === 'tailwindcss' || style === 'tailwindcss-shadcn') {
         const isViteProject = flavor === 'tanstack-start' || flavor === 'tanstack-router-spa' || flavor === 'vite-minimal';
@@ -361,17 +437,20 @@ export const users = pgTable('users', {
         }
       }
       if (style === 'tailwindcss-shadcn') {
+        console.log();
         console.log(chalk.yellow('[◉] Initializing shadcn/ui...'));
         console.log(chalk.gray('┌' + '─'.repeat(50)));
+        console.log();
         await execa(execCmd, ['shadcn@latest', 'init'], { cwd: root, stdio: 'inherit' });
+        console.log();
         console.log(chalk.gray('└' + '─'.repeat(50)));
+        console.log();
       }
       if (flavor === 'tanstack-router-spa' || flavor === 'tanstack-start') {
         // TanStack Router is usually added by the starter, but init can be useful
         // await execa(execCmd, ['@tanstack/router-cli@latest', 'init'], { cwd: root, stdio: 'inherit' });
       }
 
-      console.log();
       console.log(chalk.green(`[◉] Yeay! ${projectName} siap dengan Iydheko Stack.`));
       console.log(chalk.blue(`[◉] Sekarang, ketik: cd ${projectName} && ${pm} run dev`));
       if (db.length > 0 && db[0] !== 'none') console.log(chalk.yellow('[◉] DB setup: Jangan lupa atur .env dengan DATABASE_URL lo.'));
