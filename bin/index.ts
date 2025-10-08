@@ -187,7 +187,11 @@ create-iydheko-stack
         console.log(chalk.gray('┌' + '─'.repeat(50)));
         console.log();
         const vitePkg = pm === 'npm' ? 'vite@latest' : 'vite';
-        await execa(pm, ['create', vitePkg, projectName, '--template', 'react-ts'], { stdio: 'inherit' });
+        // Pipe 'n' to stdin to automatically answer 'No' to "Install with bun and start now?"
+        await execa(pm, ['create', vitePkg, projectName, '--template', 'react-ts'], { 
+          stdio: ['pipe', 'inherit', 'inherit'],
+          input: 'n\nn\n' // Answer 'no' to rolldown and 'no' to install prompts
+        });
         console.log();
         console.log(chalk.gray('└' + '─'.repeat(50)));
         console.log();
@@ -437,6 +441,56 @@ export const users = pgTable('users', {
         }
       }
       if (style === 'tailwindcss-shadcn') {
+        // Configure tsconfig.json with path aliases for shadcn
+        const tsconfigPath = path.join(root, 'tsconfig.json');
+        try {
+          const tsconfigContent = await fs.readFile(tsconfigPath, 'utf-8');
+          const tsconfig = JSON.parse(tsconfigContent);
+          
+          // Check if import alias already exists
+          const hasImportAlias = tsconfig.compilerOptions?.paths && 
+                                 (tsconfig.compilerOptions.paths['@/*'] || 
+                                  tsconfig.compilerOptions.paths['@']);
+          
+          if (!hasImportAlias) {
+            console.log(chalk.blue('[◉] Configuring tsconfig.json with import aliases...'));
+            // Add baseUrl and paths for import aliases
+            tsconfig.compilerOptions = tsconfig.compilerOptions || {};
+            tsconfig.compilerOptions.baseUrl = '.';
+            tsconfig.compilerOptions.paths = tsconfig.compilerOptions.paths || {};
+            tsconfig.compilerOptions.paths['@/*'] = ['./src/*'];
+            
+            await fs.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2));
+          } else {
+            console.log(chalk.blue('[◉] Import alias already exists in tsconfig.json, skipping...'));
+          }
+        } catch (e) {
+          console.error(chalk.red('[◉] Failed to configure tsconfig.json'), e);
+        }
+
+        // Also configure vite.config.ts to resolve the @ alias
+        const viteConfigPath = path.join(root, 'vite.config.ts');
+        try {
+          let viteConfigContent = await fs.readFile(viteConfigPath, 'utf-8');
+          
+          // Add path import if not present
+          if (!viteConfigContent.includes("import path from 'path'") && !viteConfigContent.includes('import path from "path"')) {
+            viteConfigContent = `import path from 'path';\n${viteConfigContent}`;
+          }
+          
+          // Add resolve.alias if not present
+          if (!viteConfigContent.includes('resolve:')) {
+            viteConfigContent = viteConfigContent.replace(
+              /export default defineConfig\(\{/,
+              `export default defineConfig({\n  resolve: {\n    alias: {\n      '@': path.resolve(__dirname, './src'),\n    },\n  },`
+            );
+          }
+          
+          await fs.writeFile(viteConfigPath, viteConfigContent);
+        } catch (e) {
+          console.error(chalk.red('[◉] Failed to configure vite.config.ts'), e);
+        }
+
         console.log();
         console.log(chalk.yellow('[◉] Initializing shadcn/ui...'));
         console.log(chalk.gray('┌' + '─'.repeat(50)));
@@ -451,9 +505,9 @@ export const users = pgTable('users', {
         // await execa(execCmd, ['@tanstack/router-cli@latest', 'init'], { cwd: root, stdio: 'inherit' });
       }
 
-      console.log(chalk.green(`[◉] Yeay! ${projectName} siap dengan Iydheko Stack.`));
-      console.log(chalk.blue(`[◉] Sekarang, ketik: cd ${projectName} && ${pm} run dev`));
-      if (db.length > 0 && db[0] !== 'none') console.log(chalk.yellow('[◉] DB setup: Jangan lupa atur .env dengan DATABASE_URL lo.'));
+      console.log(chalk.green(`[◉] Congrats! ${projectName} is ready with Iydheko Stack.`));
+      console.log(chalk.blue(`[◉] Now, type: cd ${projectName} && ${pm} run dev`));
+      if (db.length > 0 && db[0] !== 'none') console.log(chalk.yellow('[◉] DB setup: Don\'t forget to set .env with DATABASE_URL.'));
 
     } catch (error) {
       console.log();
