@@ -1,23 +1,31 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "create-iydheko-stack",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.1",
   "description": "A quick starter template by Ferdinan Iydheko",
   "bin": {
     "create-iydheko-stack": "./dist/bin/index.js"
   },
   "type": "module",
   "main": "dist/bin/index.js",
-  "private": true,
+  "private": false,
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc",
     "dev": "tsx bin/index.ts",
     "start": "node dist/bin/index.js",
-    "test": "echo 'Add tests later!'"
+    "prepublishOnly": "bun run build && node ./scripts/ensure-shebang.cjs"
   },
   "keywords": ["react", "tanstack", "cli", "starter", "iydheko", "Ferdinan Iydheko"],
   "author": "Ferdinan Iydheko",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18",
+    "bun": ">=1.1.0"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/chalk": "^2.2.4",
