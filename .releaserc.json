@@ -3,10 +3,6 @@
       {
         "name": "master",
         "prerelease": "alpha"
-      },
-      {
-        "name": "release",
-        "prerelease": false
       }
     ],
     "plugins": [
