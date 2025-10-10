@@ -1,5 +1,5 @@
 # create-iydheko-stack
-> This project is still in WIP, so it's not ready to use yet!
+> This project is still in alpha, so it's not ready to use for production yet!
 
 ```js
                      _             _           _ _          _                   _             _    
@@ -13,7 +13,6 @@
 `create-iydheko-stack` is a template starter with Tanstack Start by default. This provides a quick installation for Tailwind CSS, shadcn, All Tanstack products, zod, databases, etc. 
 
 # Usage
-> Wait, since this project is still didn't pushed to npm registry, so you can't use these commands yet, sorry!
 
 To create a project, run with your favourite package manager:
 

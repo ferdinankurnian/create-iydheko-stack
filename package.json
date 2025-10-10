@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "create-iydheko-stack",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "A quick starter template by Ferdinan Iydheko",
   "bin": {
     "create-iydheko-stack": "./dist/bin/index.js"
@@ -27,12 +27,17 @@
     "bun": ">=1.1.0"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.6",
+    "@semantic-release/npm": "^12.0.2",
     "@types/bun": "latest",
     "@types/chalk": "^2.2.4",
     "@types/commander": "^2.12.5",
     "@types/execa": "^2.0.2",
     "@types/node": "^24.6.2",
     "@types/prompts": "^2.4.9",
+    "semantic-release": "^24.2.9",
     "tsx": "^4.20.6"
   },
   "peerDependencies": {

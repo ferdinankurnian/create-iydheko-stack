@@ -6,7 +6,6 @@ import prompts from 'prompts';
 import chalk from 'chalk';
 import { execa } from 'execa';
 
-// Helper to get the latest version of a package from NPM registry
 async function getLatestVersion(packageName: string): Promise<string> {
   try {
     const { stdout } = await execa('npm', ['view', packageName, 'version']);
@@ -18,7 +17,7 @@ async function getLatestVersion(packageName: string): Promise<string> {
 }
 
 interface PromptResponses {
-  flavor: 'tanstack-start' | 'tanstack-router-spa' | 'vite-minimal' | 'electron';
+  flavor: 'tanstack-start' | 'vite-minimal' | 'electron-tanstack-start' | 'electron-minimal';
   style: 'none' | 'tailwindcss' | 'tailwindcss-shadcn';
   db: ('none' | 'neon' | 'drizzle' | 'convex' | 'dexie' | 'sqlite')[];
   optionals: ('better-auth' | 'zod' | 'vitest' | 'tanstack-query' | 'tanstack-table' | 'tanstack-form' | 'tanstack-devtools' | 'tanstack-virtual' | 'tanstack-store' | 'tanstack-db' | 'tanstack-ranger' | 'tanstack-pacer')[];
@@ -87,16 +86,16 @@ create-iydheko-stack
             name: 'flavor',
             message: 'What kind of project do you want to build?',
             choices: [
-              { title: 'TanStack Start (Full-stack SSR Framework)', value: 'tanstack-start' },
-              { title: 'Vite + TanStack Router (Client-side SPA)', value: 'tanstack-router-spa' },
+              { title: 'TanStack Start', value: 'tanstack-start' },
               { title: 'Vite Project (Minimal)', value: 'vite-minimal' },
-              { title: 'Electron App (Desktop Application)', value: 'electron' },
+              { title: 'Electron App + TanStack Start', value: 'electron-tanstack-start' },
+              { title: 'Electron App (Minimal)', value: 'electron-minimal' },
             ],
           },
           {
             type: 'select',
             name: 'style',
-            message: 'Wanna use these?',
+            message: 'Wanna use these for styling UI?',
             choices: [
               { title: 'No', value: 'none' },
               { title: 'Tailwind CSS', value: 'tailwindcss' },
@@ -134,8 +133,8 @@ create-iydheko-stack
                 { title: 'Tanstack Ranger', value: 'tanstack-ranger' },
                 { title: 'Tanstack Pacer', value: 'tanstack-pacer' },
               ];
-              if (values.flavor === 'tanstack-start') {
-                return choices.filter(choice => choice.value !== 'tanstack-query');
+              if (values.flavor === 'tanstack-start' || values.flavor === 'electron-tanstack-start') {
+                return choices.filter(choice => choice.value !== 'vitest');
               }
               return choices;
             },
@@ -172,7 +171,7 @@ create-iydheko-stack
       console.log(chalk.blue(`[◉] Scaffolding project with flavor: ${flavor} using ${pm}...`));
 
       // 1. Delegate scaffolding to official CLIs
-      if (flavor === 'tanstack-start') {
+      if (flavor === 'tanstack-start' || flavor === 'electron-tanstack-start') {
         console.log();
         console.log(chalk.yellow('[◉] Initializing TanStack Start...'));
         console.log(chalk.gray('┌' + '─'.repeat(50)));
@@ -181,34 +180,22 @@ create-iydheko-stack
         console.log();
         console.log(chalk.gray('└' + '─'.repeat(50)));
         console.log();
-      } else if (flavor === 'tanstack-router-spa' || flavor === 'vite-minimal') {
+      } else if (flavor === 'vite-minimal' || flavor === 'electron-minimal') {
         console.log();
         console.log(chalk.yellow('[◉] Initializing Vite...'));
         console.log(chalk.gray('┌' + '─'.repeat(50)));
         console.log();
         const vitePkg = pm === 'npm' ? 'vite@latest' : 'vite';
-        // Pipe 'n' to stdin to automatically answer 'No' to "Install with bun and start now?"
         await execa(pm, ['create', vitePkg, projectName, '--template', 'react-ts'], { 
           stdio: ['pipe', 'inherit', 'inherit'],
-          input: 'n\nn\n' // Answer 'no' to rolldown and 'no' to install prompts
+          input: 'n\nn\n'
         });
-        console.log();
-        console.log(chalk.gray('└' + '─'.repeat(50)));
-        console.log();
-      } else if (flavor === 'electron') {
-        console.log();
-        console.log(chalk.yellow('[◉] Initializing Electron + Vite...'));
-        console.log();
-        console.log(chalk.gray('┌' + '─'.repeat(50)));
-        console.log();
-        const electronVitePkg = pm === 'npm' ? '@electron-vite/app@latest' : '@electron-vite/app';
-        await execa(pm, ['create', electronVitePkg, projectName], { stdio: 'inherit' });
         console.log();
         console.log(chalk.gray('└' + '─'.repeat(50)));
         console.log();
       }
 
-      console.log(chalk.blue(`[◉] Project scaffolded. Now adding Iydheko Stack extras...`));
+      console.log(chalk.blue(`[◉] Project scaffolded. Now adding extras...`));
 
       // 2. Read the generated package.json
       const pkgPath = path.join(root, 'package.json');
@@ -231,7 +218,7 @@ create-iydheko-stack
         if (pkg.dependencies['autoprefixer']) delete pkg.dependencies['autoprefixer'];
         if (pkg.devDependencies['autoprefixer']) delete pkg.devDependencies['autoprefixer'];
 
-        const isViteProject = flavor === 'tanstack-start' || flavor === 'tanstack-router-spa' || flavor === 'vite-minimal';
+        const isViteProject = flavor === 'tanstack-start' || flavor === 'vite-minimal';
 
         if (isViteProject) {
           const latestVitePlugin = await getLatestVersion('@tailwindcss/vite');
@@ -260,6 +247,14 @@ create-iydheko-stack
         pkg.scripts['convex:dev'] = 'npx convex dev';
       }
       if (optionals.includes('tanstack-query')) depsToAdd.push({ name: '@tanstack/react-query', isDev: false });
+      if (optionals.includes('tanstack-table')) depsToAdd.push({ name: '@tanstack/react-table', isDev: false });
+      if (optionals.includes('tanstack-form')) depsToAdd.push({ name: '@tanstack/react-form', isDev: false });
+      if (optionals.includes('tanstack-devtools')) depsToAdd.push({ name: '@tanstack/react-query-devtools', isDev: false });
+      if (optionals.includes('tanstack-virtual')) depsToAdd.push({ name: '@tanstack/react-virtual', isDev: false });
+      if (optionals.includes('tanstack-store')) depsToAdd.push({ name: '@tanstack/react-store', isDev: false });
+      if (optionals.includes('tanstack-db')) depsToAdd.push({ name: '@tanstack/db', isDev: false });
+      if (optionals.includes('tanstack-ranger')) depsToAdd.push({ name: '@tanstack/ranger', isDev: false });
+      if (optionals.includes('tanstack-pacer')) depsToAdd.push({ name: '@tanstack/pacer', isDev: false });
       if (optionals.includes('zod')) depsToAdd.push({ name: 'zod', isDev: false });
       if (optionals.includes('better-auth')) depsToAdd.push({ name: 'better-auth', isDev: false });
       if (optionals.includes('vitest')) depsToAdd.push({ name: 'vitest', isDev: true });
@@ -382,7 +377,7 @@ export const users = pgTable('users', {
       console.log();
 
       if (style === 'tailwindcss' || style === 'tailwindcss-shadcn') {
-        const isViteProject = flavor === 'tanstack-start' || flavor === 'tanstack-router-spa' || flavor === 'vite-minimal';
+        const isViteProject = flavor === 'tanstack-start' || flavor === 'vite-minimal';
 
         if (isViteProject) {
           console.log(chalk.blue('[◉] Configuring Tailwind CSS for Vite...'));
@@ -500,12 +495,12 @@ export const users = pgTable('users', {
         console.log(chalk.gray('└' + '─'.repeat(50)));
         console.log();
       }
-      if (flavor === 'tanstack-router-spa' || flavor === 'tanstack-start') {
+      if (flavor === 'tanstack-start') {
         // TanStack Router is usually added by the starter, but init can be useful
         // await execa(execCmd, ['@tanstack/router-cli@latest', 'init'], { cwd: root, stdio: 'inherit' });
       }
 
-      console.log(chalk.green(`[◉] Congrats! ${projectName} is ready with Iydheko Stack.`));
+      console.log(chalk.green(`[◉] Congrats! ${projectName} is ready to cook!`));
       console.log(chalk.blue(`[◉] Now, type: cd ${projectName} && ${pm} run dev`));
       if (db.length > 0 && db[0] !== 'none') console.log(chalk.yellow('[◉] DB setup: Don\'t forget to set .env with DATABASE_URL.'));
 
