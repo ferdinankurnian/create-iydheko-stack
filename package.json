@@ -1,19 +1,19 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "create-iydheko-stack",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "A quick starter template by Ferdinan Iydheko",
   "bin": {
-    "create-iydheko-stack": "./dist/bin/index.js"
+    "create-iydheko-stack": "./dist/index.js"
   },
-  "type": "module",
-  "main": "dist/bin/index.js",
+  "main": "dist/index.js",
   "private": false,
   "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc",
+    "postbuild": "mv dist/bin/index.js dist/index.js && rm -rf dist/bin",
     "dev": "tsx bin/index.ts",
-    "start": "node dist/bin/index.js",
+    "start": "node dist/index.js",
     "prepublishOnly": "bun run build && node ./scripts/ensure-shebang.cjs"
   },
   "keywords": ["react", "tanstack", "cli", "starter", "iydheko", "Ferdinan Iydheko"],
@@ -22,6 +22,9 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "overrides": {
+    "npm-run-path": "^5.3.0"
   },
   "engines": {
     "node": ">=18",

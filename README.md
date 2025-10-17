@@ -31,11 +31,6 @@ pnpm
 pnpm dlx create-iydheko-stack
 ```
 
-yarn
-```bash
-yarn dlx create-iydheko-stack
-```
-
 # Run from source
 
 To install dependencies:
