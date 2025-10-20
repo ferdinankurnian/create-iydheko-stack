@@ -5,14 +5,16 @@ import chalk from 'chalk';
 import { detectPackageManager } from './utils/pm';
 import { PromptResponses } from './types';
 import { scaffold } from './steps/scaffold';
+import { addPages } from './steps/add-pages';
 import { setupElectron } from './steps/setup-electron';
 import { setupTailwind } from './steps/setup-tailwind';
 import { setupDatabase } from './steps/setup-database';
 import { addDeps } from './steps/add-deps';
+import { setupCloudflare } from './steps/setup-cloudflare';
 import { finalize } from './steps/finalize';
 
 export async function run(projectNameFromArgs?: string) {
-  const logo = `
+  const logo = String.raw`
       _     
   ___| |___ 
  / __| / __|
@@ -78,13 +80,22 @@ create-iydheko-stack
           type: 'multiselect',
           name: 'db',
           message: 'Wanna use database?',
-          choices: [
-            { title: 'Neon', value: 'neon' },
-            { title: 'Drizzle ORM', value: 'drizzle' },
-            { title: 'Convex', value: 'convex' },
-            { title: 'Dexie.js', value: 'dexie' },
-            { title: 'sqlite', value: 'sqlite' },
-          ],
+          choices: (prev, values) => {
+            const isElectron = values.flavor === 'electron-tanstack-start' || values.flavor === 'electron-minimal';
+            
+            const choices = [
+              { title: 'Neon', value: 'neon' },
+              { title: 'Drizzle ORM', value: 'drizzle' },
+              { title: 'Convex', value: 'convex' },
+              { title: 'Dexie.js', value: 'dexie' },
+            ];
+            
+            if (isElectron) {
+              choices.push({ title: 'sqlite', value: 'sqlite' });
+            }
+            
+            return choices;
+          },
         },
         {
           type: 'multiselect',
@@ -120,7 +131,12 @@ create-iydheko-stack
           inactive: 'No',
         },
         {
-          type: 'toggle',
+          type: (prev, values) => {
+            if (values.flavor === 'electron-tanstack-start' || values.flavor === 'electron-minimal') {
+              return null;
+            }
+            return 'toggle';
+          },
           name: 'deploy',
           message: 'Wanna deploy to Cloudflare?',
           initial: false,
@@ -136,10 +152,12 @@ create-iydheko-stack
       }
     );
 
-    const { flavor, style, db, optionals } = responses;
+    const { flavor, style, db, optionals, pages } = responses;
     const root = path.join(process.cwd(), projectName!);
 
     await scaffold(projectName!, flavor, pm);
+
+    await addPages(projectName!, flavor, pages);
 
     const pkgPath = path.join(root, 'package.json');
     const pkgContent = await fs.readFile(pkgPath, 'utf-8');
@@ -161,6 +179,10 @@ create-iydheko-stack
 
     await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 
+    if (responses.deploy) {
+      await setupCloudflare({ projectDir: root, projectName: projectName! });
+    }
+
     await finalize(root, pm);
 
     console.log(chalk.green(`[◉] Congrats! ${projectName} is ready to cook!`));
@@ -169,7 +191,7 @@ create-iydheko-stack
       console.log(chalk.yellow('[◉] DB setup: Don\'t forget to set .env with DATABASE_URL.'));
   } catch (error) {
     console.log();
-    console.error(chalk.red(`[◉] An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`));
+    console.error(chalk.red(`[◉] Owh noo, an error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`));
     process.exit(1);
   }
 }

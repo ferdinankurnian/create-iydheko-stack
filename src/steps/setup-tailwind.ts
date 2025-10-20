@@ -87,7 +87,7 @@ export async function setupTailwind(
       }
     } else {
       console.log(chalk.blue('[◉] Configuring Tailwind CSS for PostCSS...'));
-      const postcssConfig = `module.exports = {\n  plugins: {\n    '@tailwindcss/postcss': {},\n  },\n};`;
+      const postcssConfig = `export default {\n  plugins: {\n    '@tailwindcss/postcss': {},\n  },\n};`;
       await fs.writeFile(path.join(root, 'postcss.config.js'), postcssConfig);
 
       const cssFilePath = path.join(root, 'src', 'index.css');
