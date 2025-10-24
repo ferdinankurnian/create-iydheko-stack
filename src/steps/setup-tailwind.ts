@@ -24,7 +24,7 @@ export async function setupTailwind(
     if (pkg.dependencies['autoprefixer']) delete pkg.dependencies['autoprefixer'];
     if (pkg.devDependencies['autoprefixer']) delete pkg.devDependencies['autoprefixer'];
 
-    const isViteProject = flavor === 'tanstack-start' || flavor === 'vite-minimal';
+    const isViteProject = flavor.includes('tanstack-start') || flavor === 'vite-minimal';
 
     if (isViteProject) {
       const latestVitePlugin = await getLatestVersion('@tailwindcss/vite');
@@ -43,7 +43,7 @@ export async function setupTailwind(
   await fs.writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 
   if (style === 'tailwindcss' || style === 'tailwindcss-shadcn') {
-    const isViteProject = flavor === 'tanstack-start' || flavor === 'vite-minimal';
+    const isViteProject = flavor.includes('tanstack-start') || flavor === 'vite-minimal';
 
     if (isViteProject) {
       console.log(chalk.blue('[◉] Configuring Tailwind CSS for Vite...'));
@@ -108,7 +108,11 @@ export async function setupTailwind(
     const tsconfigPath = path.join(root, 'tsconfig.json');
     try {
       const tsconfigContent = await fs.readFile(tsconfigPath, 'utf-8');
-      const tsconfig = JSON.parse(tsconfigContent);
+      // Strip comments and trailing commas from tsconfig.json before parsing
+      const cleanedTsconfigContent = tsconfigContent
+        .replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '') // remove comments
+        .replace(/,(\s*[}\]])/g, '$1'); // remove trailing commas
+      const tsconfig = JSON.parse(cleanedTsconfigContent);
 
       // Check if import alias already exists
       const hasImportAlias =

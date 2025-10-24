@@ -2,9 +2,18 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { getLatestVersion } from '../utils/get-latest-version';
+import { PromptResponses } from '../types';
 
-export async function setupElectron(root: string, pkg: any, projectName: string) {
+export async function setupElectron(
+  root: string,
+  pkg: any,
+  projectName: string,
+  flavor: PromptResponses['flavor']
+) {
   console.log(chalk.blue('[◉] Setting up Electron with plain JavaScript...'));
+
+  // Determine port based on flavor
+  const port = flavor === 'electron-tanstack-start' ? 3000 : 5173;
 
   // Add Electron dependencies
   const electronVersion = await getLatestVersion('electron');
@@ -30,7 +39,7 @@ export async function setupElectron(root: string, pkg: any, projectName: string)
     ...pkg.scripts,
     'dev:web': originalDevScript,
     'dev:electron': 'electron .', // No compilation needed
-    dev: `concurrently "npm run dev:web" "wait-on http://localhost:5173 && npm run dev:electron"`,
+    dev: `concurrently "npm run dev:web" "wait-on http://localhost:${port} && npm run dev:electron"`,
     'build:web': pkg.scripts.build || 'vite build',
     'build:electron': 'true', // No build step for electron
     build: 'npm run build:web && npm run build:electron',
@@ -93,7 +102,7 @@ function createWindow() {
 
   if (isDev) {
     // Development: load from dev server
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:${port}');
   } else {
     // Production: load from built files
     mainWindow.loadFile(join(__dirname, '../dist/index.html'));

@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import { detectPackageManager } from './utils/pm';
 import { PromptResponses } from './types';
 import { scaffold } from './steps/scaffold';
-import { addPages } from './steps/add-pages';
+
 import { setupElectron } from './steps/setup-electron';
 import { setupTailwind } from './steps/setup-tailwind';
 import { setupDatabase } from './steps/setup-database';
@@ -70,11 +70,17 @@ create-iydheko-stack
           type: 'select',
           name: 'style',
           message: 'Wanna use these for styling UI?',
-          choices: [
-            { title: 'No', value: 'none' },
-            { title: 'Tailwind CSS', value: 'tailwindcss' },
-            { title: 'Tailwind CSS + shadcn', value: 'tailwindcss-shadcn' },
-          ],
+          choices: (prev, values) => {
+            const choices = [
+              { title: 'No', value: 'none' },
+              { title: 'Tailwind CSS', value: 'tailwindcss' },
+              { title: 'Tailwind CSS + shadcn', value: 'tailwindcss-shadcn' },
+            ];
+            if (values.flavor?.includes('tanstack')) {
+              return choices.filter((c) => c.value !== 'none');
+            }
+            return choices;
+          },
         },
         {
           type: 'multiselect',
@@ -123,14 +129,6 @@ create-iydheko-stack
           },
         },
         {
-          type: 'toggle',
-          name: 'pages',
-          message: 'Wanna add pages template example?',
-          initial: true,
-          active: 'Yes',
-          inactive: 'No',
-        },
-        {
           type: (prev, values) => {
             if (values.flavor === 'electron-tanstack-start' || values.flavor === 'electron-minimal') {
               return null;
@@ -152,12 +150,10 @@ create-iydheko-stack
       }
     );
 
-    const { flavor, style, db, optionals, pages } = responses;
+    const { flavor, style, db, optionals } = responses;
     const root = path.join(process.cwd(), projectName!);
 
     await scaffold(projectName!, flavor, pm);
-
-    await addPages(projectName!, flavor, pages);
 
     const pkgPath = path.join(root, 'package.json');
     const pkgContent = await fs.readFile(pkgPath, 'utf-8');
@@ -167,7 +163,7 @@ create-iydheko-stack
     pkg.devDependencies = pkg.devDependencies || {};
 
     if (flavor === 'electron-tanstack-start' || flavor === 'electron-minimal') {
-      pkg = await setupElectron(root, pkg, projectName!);
+      pkg = await setupElectron(root, pkg, projectName!, flavor);
     }
 
     pkg = await setupTailwind(root, pkg, flavor, style, execCmd);
@@ -183,7 +179,7 @@ create-iydheko-stack
       await setupCloudflare({ projectDir: root, projectName: projectName! });
     }
 
-    await finalize(root, pm);
+    await finalize(root, pm, flavor);
 
     console.log(chalk.green(`[◉] Congrats! ${projectName} is ready to cook!`));
     console.log(chalk.blue(`[◉] Now, type: cd ${projectName} && ${pm} run dev`));
