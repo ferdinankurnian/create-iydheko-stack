@@ -1,5 +1,5 @@
 # create-iydheko-stack
-> This project is still in alpha, so it's not ready to use for production yet!
+> This project is still in alpha, but you can try it out!
 
 ```js
                      _             _           _ _          _                   _             _    

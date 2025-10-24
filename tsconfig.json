@@ -9,7 +9,7 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": "src",
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
@@ -20,6 +20,6 @@
     "noPropertyAccessFromIndexSignature": false,
     "esModuleInterop": true
   },
-  "include": ["bin/**/*.ts", "src/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

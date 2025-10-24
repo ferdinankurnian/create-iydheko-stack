@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const filePath = path.resolve(__dirname, '..', 'dist', 'index.js');
+const filePath = path.resolve(__dirname, '..', 'dist', 'bin', 'index.js');
 const shebang = '#!/usr/bin/env node';
 
 let content = fs.readFileSync(filePath, 'utf8');

@@ -1,17 +1,17 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "create-iydheko-stack",
-  "version": "0.1.0-alpha.4",
-  "description": "A quick starter template by Ferdinan Iydheko",
+  "version": "0.1.0-alpha.5",
+  "description": "A project scaffolder by Ferdinan Iydheko",
   "bin": {
     "create-iydheko-stack": "./dist/bin/index.js"
   },
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "private": false,
   "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx bin/index.ts",
+    "dev": "tsx src/bin/index.ts",
     "start": "node dist/bin/index.js",
     "prepublishOnly": "bun run build && node ./scripts/ensure-shebang.cjs"
   },
