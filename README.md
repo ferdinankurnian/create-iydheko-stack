@@ -18,17 +18,17 @@ To create a project, run with your favourite package manager:
 
 npm
 ```bash
-npx create-iydheko-stack
+npx create-iydheko-stack@latest
 ```
 
 bun
 ```bash
-bunx create-iydheko-stack
+bunx create-iydheko-stack@latest
 ```
 
 pnpm
 ```bash
-pnpm dlx create-iydheko-stack
+pnpm dlx create-iydheko-stack@latest
 ```
 
 # Run from source
