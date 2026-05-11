@@ -23,7 +23,7 @@ export async function scaffold(projectName: string, pm: string) {
   console.log();
   
   const vitePkg = pm === 'npm' ? 'vite@latest' : 'vite';
-  await spawnSync(pm, ['create', vitePkg, projectName, '--template', 'react-ts'], {
+  await spawnSync(pm, ['create', vitePkg, projectName, '--template', 'vanilla'], {
     stdio: ['pipe', 'inherit', 'inherit'],
     input: 'n\nn\n',
   });
