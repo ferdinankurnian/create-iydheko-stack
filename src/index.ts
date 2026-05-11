@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import prompts from 'prompts';
-import chalk from 'chalk';
+import { styleText } from 'util';
 import { detectPackageManager } from './utils/pm';
 import { PromptResponses } from './types';
 import { scaffold } from './steps/scaffold';
@@ -24,7 +24,7 @@ export async function run(projectNameFromArgs?: string) {
 
 create-iydheko-stack
 `;
-  console.log(chalk.blue(logo));
+  console.log(styleText('blue', logo));
 
   try {
     const { pm, execCmd } = detectPackageManager();
@@ -41,13 +41,13 @@ create-iydheko-stack
         },
         {
           onCancel: () => {
-            console.log(chalk.yellow('[◉] Cancelled?? okay, fine!'));
+            console.log(styleText('yellow', '[◉] Cancelled?? okay, fine!'));
             process.exit(0);
           },
         }
       );
       if (!res.name) {
-        console.log(chalk.red('[◉] Project name cannot be empty.'));
+        console.log(styleText('red', '[◉] Project name cannot be empty.'));
         process.exit(1);
       }
       projectName = res.name;
@@ -144,7 +144,7 @@ create-iydheko-stack
       ],
       {
         onCancel: () => {
-          console.log(chalk.yellow('[◉] Cancelled?? okay, fine!'));
+          console.log(styleText('yellow', '[◉] Cancelled?? okay, fine!'));
           process.exit(0);
         },
       }
