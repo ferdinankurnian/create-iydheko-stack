@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import { styleText } from 'util';
 import { getLatestVersion } from '../utils/get-latest-version';
 import { PromptResponses } from '../types';
 
@@ -23,7 +23,7 @@ export async function addDeps(
   if (optionals.includes('vitest')) depsToAdd.push({ name: 'vitest', isDev: true });
 
   if (depsToAdd.length > 0) {
-    console.log(chalk.blue('[◉] Fetching latest versions for additional dependencies...'));
+    console.log(styleText('blue', '[◉] Fetching latest versions for additional dependencies...'));
     await Promise.all(
       depsToAdd.map(async (dep) => {
         const version = await getLatestVersion(dep.name);

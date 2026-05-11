@@ -1,9 +1,20 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import chalk from 'chalk';
-import { execa } from 'execa';
+import { styleText } from 'util';
+import { spawn } from 'child_process';
 import { getLatestVersion } from '../utils/get-latest-version';
 import { PromptResponses } from '../types';
+
+function spawnSync(command: string, args: string[], options: any = {}) {
+  return new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, { stdio: options.stdio || 'pipe', ...options });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) reject(new Error(`Command failed with code ${code}`));
+      else resolve();
+    });
+  });
+}
 
 export async function setupTailwind(
   root: string,
@@ -13,7 +24,7 @@ export async function setupTailwind(
   execCmd: string
 ) {
   if (style === 'tailwindcss' || style === 'tailwindcss-shadcn') {
-    console.log(chalk.blue('[◉] Adding Tailwind CSS v4 dependencies...'));
+    console.log(styleText('blue', '[◉] Adding Tailwind CSS v4 dependencies...'));
     const latestTailwind = await getLatestVersion('tailwindcss');
     if (pkg.dependencies['tailwindcss']) delete pkg.dependencies['tailwindcss'];
     pkg.devDependencies['tailwindcss'] = `^${latestTailwind}`;
@@ -46,7 +57,7 @@ export async function setupTailwind(
     const isViteProject = flavor.includes('tanstack-start') || flavor === 'vite-minimal';
 
     if (isViteProject) {
-      console.log(chalk.blue('[◉] Configuring Tailwind CSS for Vite...'));
+      console.log(styleText('blue', '[◉] Configuring Tailwind CSS for Vite...'));
       const viteConfigPath = path.join(root, 'vite.config.ts');
       try {
         let viteConfigContent = await fs.readFile(viteConfigPath, 'utf-8');
@@ -60,7 +71,7 @@ export async function setupTailwind(
           await fs.writeFile(viteConfigPath, viteConfigContent);
         }
       } catch (e) {
-        console.error(chalk.red('[◉] Failed to configure vite.config.ts for Tailwind CSS.'), e);
+        console.error(styleText('red', '[◉] Failed to configure vite.config.ts for Tailwind CSS.'), e);
       }
 
       const cssFilePaths = [
@@ -82,11 +93,11 @@ export async function setupTailwind(
       }
       if (!cssFileConfigured) {
         console.error(
-          chalk.red('[◉] Could not find a CSS file (styles.css, index.css, or app.css) in src/ to add Tailwind import.')
+          styleText('red', '[◉] Could not find a CSS file (styles.css, index.css, or app.css) in src/ to add Tailwind import.')
         );
       }
     } else {
-      console.log(chalk.blue('[◉] Configuring Tailwind CSS for PostCSS...'));
+      console.log(styleText('blue', '[◉] Configuring Tailwind CSS for PostCSS...'));
       const postcssConfig = `export default {\n  plugins: {\n    '@tailwindcss/postcss': {},\n  },\n};`;
       await fs.writeFile(path.join(root, 'postcss.config.js'), postcssConfig);
 
@@ -98,7 +109,7 @@ export async function setupTailwind(
           await fs.writeFile(cssFilePath, cssContent);
         }
       } catch (e) {
-        console.error(chalk.red('[◉] Failed to add @import "tailwindcss" to CSS file.'), e);
+        console.error(styleText('red', '[◉] Failed to add @import "tailwindcss" to CSS file.'), e);
       }
     }
   }
@@ -119,7 +130,7 @@ export async function setupTailwind(
         tsconfig.compilerOptions?.paths && (tsconfig.compilerOptions.paths['@/*'] || tsconfig.compilerOptions.paths['@']);
 
       if (!hasImportAlias) {
-        console.log(chalk.blue('[◉] Configuring tsconfig.json with import aliases...'));
+        console.log(styleText('blue', '[◉] Configuring tsconfig.json with import aliases...'));
         // Add baseUrl and paths for import aliases
         tsconfig.compilerOptions = tsconfig.compilerOptions || {};
         tsconfig.compilerOptions.baseUrl = '.';
@@ -128,10 +139,10 @@ export async function setupTailwind(
 
         await fs.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2));
       } else {
-        console.log(chalk.blue('[◉] Import alias already exists in tsconfig.json, skipping...'));
+        console.log(styleText('blue', '[◉] Import alias already exists in tsconfig.json, skipping...'));
       }
     } catch (e) {
-      console.error(chalk.red('[◉] Failed to configure tsconfig.json'), e);
+      console.error(styleText('red', '[◉] Failed to configure tsconfig.json'), e);
     }
 
     // Also configure vite.config.ts to resolve the @ alias
@@ -154,16 +165,16 @@ export async function setupTailwind(
 
       await fs.writeFile(viteConfigPath, viteConfigContent);
     } catch (e) {
-      console.error(chalk.red('[◉] Failed to configure vite.config.ts'), e);
+      console.error(styleText('red', '[◉] Failed to configure vite.config.ts'), e);
     }
 
     console.log();
-    console.log(chalk.yellow('[◉] Initializing shadcn/ui...'));
-    console.log(chalk.gray('┌' + '─'.repeat(50)));
+    console.log(styleText('yellow', '[◉] Initializing shadcn/ui...'));
+    console.log(styleText('gray', '┌' + '─'.repeat(50)));
     console.log();
-    await execa(execCmd, ['shadcn@latest', 'init'], { cwd: root, stdio: 'inherit' });
+    await spawnSync(execCmd, ['shadcn@latest', 'init'], { cwd: root, stdio: 'inherit' });
     console.log();
-    console.log(chalk.gray('└' + '─'.repeat(50)));
+    console.log(styleText('gray', '└' + '─'.repeat(50)));
     console.log();
   }
 

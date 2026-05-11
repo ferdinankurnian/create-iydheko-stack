@@ -1,11 +1,11 @@
 import path from 'path';
 import { promises as fs } from 'fs';
 import { addDeps } from './add-deps';
-import chalk from 'chalk';
+import { styleText } from 'util';
 
 export const setupCloudflare = async ({ projectDir, projectName }: { projectDir: string, projectName: string }) => {
   console.log();
-  console.log(chalk.blue('[◉] Setting up Cloudflare...'));
+  console.log(styleText('blue', '[◉] Setting up Cloudflare...'));
 
   // 1. Add wrangler as a dev dependency
   const pkgJsonPath = path.join(projectDir, "package.json");
@@ -33,5 +33,5 @@ build_output_dir = "dist"
   };
   await fs.writeFile(pkgJsonPath, JSON.stringify(finalPkgJson, null, 2));
 
-  console.log(chalk.blue('[◉] Cloudflare setup complete!'));
+  console.log(styleText('blue', '[◉] Cloudflare setup complete!'));
 };

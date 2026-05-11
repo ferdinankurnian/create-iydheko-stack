@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import chalk from 'chalk';
+import { styleText } from 'util';
 import { PromptResponses } from '../types';
 
 export async function setupDatabase(root: string, pkg: any, db: PromptResponses['db'], optionals: PromptResponses['optionals']) {
@@ -57,7 +57,7 @@ export async function setupDatabase(root: string, pkg: any, db: PromptResponses[
   }
 
   if (envVars.length > 0) {
-    console.log(chalk.blue('[◉] Creating .env and .env.example files...'));
+    console.log(styleText('blue', '[◉] Creating .env and .env.example files...'));
 
     const envExampleContent = envVars.map((v) => `${v.key}=`).join('\n');
     const envContent = envVars.map((v) => `${v.comment}\n${v.key}=${v.value}`).join('\n\n');
@@ -80,7 +80,7 @@ export async function setupDatabase(root: string, pkg: any, db: PromptResponses[
   }
 
   // 7. Add config files and templates
-  console.log(chalk.blue('[◉] Adding config files and templates...'));
+  console.log(styleText('blue', '[◉] Adding config files and templates...'));
 
   if (db.includes('neon') || db.includes('drizzle')) {
     const drizzleConfig = `import type { Config } from 'drizzle-kit';

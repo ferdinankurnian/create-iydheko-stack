@@ -181,13 +181,13 @@ create-iydheko-stack
 
     await finalize(root, pm, flavor);
 
-    console.log(chalk.green(`[◉] Congrats! ${projectName} is ready to cook!`));
-    console.log(chalk.blue(`[◉] Now, type: cd ${projectName} && ${pm} run dev`));
+    console.log(styleText('green', `[◉] Congrats! ${projectName} is ready to cook!`));
+    console.log(styleText('blue', `[◉] Now, type: cd ${projectName} && ${pm} run dev`));
     if (db.length > 0 && db[0] !== 'none')
-      console.log(chalk.yellow('[◉] DB setup: Don\'t forget to set .env with DATABASE_URL.'));
+      console.log(styleText('yellow', '[◉] DB setup: Don\'t forget to set .env with DATABASE_URL.'));
   } catch (error) {
     console.log();
-    console.error(chalk.red(`[◉] Owh noo, an error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`));
+    console.error(styleText('red', `[◉] Owh noo, an error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`));
     process.exit(1);
   }
 }

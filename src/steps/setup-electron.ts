@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import chalk from 'chalk';
+import { styleText } from 'util';
 import { getLatestVersion } from '../utils/get-latest-version';
 import { PromptResponses } from '../types';
 
@@ -10,7 +10,7 @@ export async function setupElectron(
   projectName: string,
   flavor: PromptResponses['flavor']
 ) {
-  console.log(chalk.blue('[◉] Setting up Electron with plain JavaScript...'));
+  console.log(styleText('blue', '[◉] Setting up Electron with plain JavaScript...'));
 
   // Determine port based on flavor
   const port = flavor === 'electron-tanstack-start' ? 3000 : 5173;
@@ -189,6 +189,6 @@ You can use tools like:
     await fs.writeFile(gitignorePath, '.env\n# Electron\nrelease/\n');
   }
 
-  console.log(chalk.green('[◉] Electron setup complete!'));
+  console.log(styleText('green', '[◉] Electron setup complete!'));
   return pkg;
 }
