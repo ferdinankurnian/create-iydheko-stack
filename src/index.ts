@@ -6,6 +6,7 @@ import { scaffold } from "./steps/scaffold";
 import { finalize } from "./steps/finalize";
 
 type Framework = "vite-vanilla-ts" | "vite-react";
+type Styling = "none" | "tailwindcss";
 
 export async function run(projectNameFromArgs?: string) {
   const logo = String.raw`
@@ -59,6 +60,27 @@ create-iydheko-stack`;
       },
     );
     framework = (frameworkRes.framework as Framework | undefined) ?? "vite-vanilla-ts";
+
+    const stylingRes = await prompts(
+      {
+        type: "select",
+        name: "styling",
+        message: "Pick a styling option",
+        choices: [
+          { title: "No", value: "none" },
+          { title: "Tailwind CSS", value: "tailwindcss" },
+        ],
+        initial: 0,
+      },
+      {
+        onCancel: () => {
+          console.log(styleText("yellow", "[◉] Cancelled?? okay, fine!"));
+          process.exit(0);
+        },
+      },
+    );
+    const styling = (stylingRes.styling as Styling | undefined) ?? "none";
+    void styling;
 
     const root = path.join(process.cwd(), projectName!);
 
