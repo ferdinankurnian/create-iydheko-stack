@@ -7,6 +7,7 @@ import { finalize } from "./steps/finalize";
 
 type Framework = "vite-vanilla-ts" | "vite-react";
 type Styling = "none" | "tailwindcss";
+type ShadcnUse = "yes" | "preset" | "no";
 
 export async function run(projectNameFromArgs?: string) {
   const logo = String.raw`
@@ -81,6 +82,53 @@ create-iydheko-stack`;
     );
     const styling = (stylingRes.styling as Styling | undefined) ?? "none";
     void styling;
+
+    let shadcnUse: ShadcnUse = "no";
+    let shadcnPreset = "";
+
+    if (styling === "tailwindcss") {
+      const shadcnRes = await prompts(
+        {
+          type: "select",
+          name: "shadcnUse",
+          message: "Use Shadcn?",
+          choices: [
+            { title: "Yes", value: "yes" },
+            { title: "Yes, and i have preset", value: "preset" },
+            { title: "no", value: "no" },
+          ],
+          initial: 2,
+        },
+        {
+          onCancel: () => {
+            console.log(styleText("yellow", "[◉] Cancelled?? okay, fine!"));
+            process.exit(0);
+          },
+        },
+      );
+      shadcnUse = (shadcnRes.shadcnUse as ShadcnUse | undefined) ?? "no";
+
+      if (shadcnUse === "preset") {
+        const presetRes = await prompts(
+          {
+            type: "text",
+            name: "preset",
+            message: "Enter Shadcn preset:",
+            initial: "",
+          },
+          {
+            onCancel: () => {
+              console.log(styleText("yellow", "[◉] Cancelled?? okay, fine!"));
+              process.exit(0);
+            },
+          },
+        );
+        shadcnPreset = String(presetRes.preset || "").replace(/^--preset\s+/, "").trim();
+      }
+    }
+
+    void shadcnUse;
+    void shadcnPreset;
 
     const root = path.join(process.cwd(), projectName!);
 
