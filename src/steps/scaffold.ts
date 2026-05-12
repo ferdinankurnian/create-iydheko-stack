@@ -16,18 +16,24 @@ function spawnSync(command: string, args: string[], options: any = {}) {
   });
 }
 
-export async function scaffold(projectName: string, pm: string) {
+type Framework = 'vite-vanilla-ts' | 'vite-react';
+
+function getTemplate(framework: Framework) {
+  return framework === 'vite-react' ? 'react-ts' : 'vanilla-ts';
+}
+
+export async function scaffold(projectName: string, framework: Framework, execCmd: string) {
   console.log();
-  console.log(styleText('blue', '[◉] Scaffolding Vite project...'));
+  console.log(styleText('blue', `[◉] Scaffolding ${framework === 'vite-react' ? 'Vite + React' : 'Vite Vanilla (TS)'}...`));
   console.log(styleText('gray', '┌' + '─'.repeat(50)));
   console.log();
-  
-  const vitePkg = pm === 'npm' ? 'vite@latest' : 'vite';
-  await spawnSync(pm, ['create', vitePkg, projectName, '--template', 'vanilla'], {
-    stdio: ['pipe', 'inherit', 'inherit'],
-    input: 'n\nn\n',
+
+  const [command, ...baseArgs] = execCmd.split(' ');
+  if (!command) throw new Error('No package manager command found.');
+  await spawnSync(command, [...baseArgs, 'create-vite', projectName, '--template', getTemplate(framework), '--no-interactive'], {
+    stdio: 'inherit',
   });
-  
+
   console.log();
   console.log(styleText('gray', '└' + '─'.repeat(50)));
   console.log();
