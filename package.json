@@ -1,21 +1,32 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "create-iydheko-stack",
-  "version": "0.2.0-alpha.1",
+  "version": "0.2.0-alpha.2",
   "description": "A project scaffolder by Ferdinan Iydheko",
   "bin": {
     "create-iydheko-stack": "./dist/bin/index.js"
   },
   "main": "dist/index.js",
   "private": false,
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc",
     "dev": "tsx src/bin/index.ts",
     "start": "node dist/bin/index.js",
     "prepublishOnly": "bun run build && node ./scripts/ensure-shebang.cjs"
   },
-  "keywords": ["react", "tanstack", "cli", "starter", "iydheko", "Ferdinan Iydheko"],
+  "keywords": [
+    "react",
+    "tanstack",
+    "cli",
+    "starter",
+    "iydheko",
+    "Ferdinan Iydheko"
+  ],
   "author": "Ferdinan Iydheko",
   "license": "MIT",
   "publishConfig": {
@@ -36,10 +47,8 @@
     "@types/node": "^24.6.2",
     "@types/prompts": "^2.4.9",
     "semantic-release": "^24.2.9",
+    "typescript": "^5.9.3",
     "tsx": "^4.20.6"
-  },
-  "peerDependencies": {
-    "typescript": "^5.9.3"
   },
   "dependencies": {
     "commander": "^14.0.1",
