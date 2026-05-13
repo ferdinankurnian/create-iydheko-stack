@@ -173,6 +173,13 @@ function normalizeShadcnPresetInput(input: string): string {
   return presetId ? presetId.trim() : '';
 }
 
+function ensureObjectRecord(value: unknown): Record<string, unknown> {
+  if (value && typeof value === 'object') {
+    return value as Record<string, unknown>;
+  }
+  return {};
+}
+
 async function runCommand(command: string, args: string[], options: RunCommandOptions = {}): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const child = spawn(command, args, {
@@ -236,6 +243,31 @@ async function readPackageJson(root: string): Promise<PackageJson> {
 async function writePackageJson(root: string, pkg: PackageJson): Promise<void> {
   const pkgPath = path.join(root, 'package.json');
   await fs.writeFile(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
+}
+
+async function ensureShadcnImportAliases(root: string): Promise<void> {
+  const configFiles = ['tsconfig.json', 'tsconfig.app.json', 'jsconfig.json'];
+
+  await Promise.all(
+    configFiles.map(async (fileName) => {
+      const configPath = path.join(root, fileName);
+      if (!(await fileExists(configPath))) {
+        return;
+      }
+
+      const raw = await fs.readFile(configPath, 'utf-8');
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      const compilerOptions = ensureObjectRecord(parsed.compilerOptions);
+      const paths = ensureObjectRecord(compilerOptions.paths);
+
+      compilerOptions.baseUrl = '.';
+      paths['@/*'] = ['./src/*'];
+      compilerOptions.paths = paths;
+      parsed.compilerOptions = compilerOptions;
+
+      await fs.writeFile(configPath, `${JSON.stringify(parsed, null, 2)}\n`);
+    }),
+  );
 }
 
 function setPackageDependency(pkg: PackageJson, packageName: string, dev = false): void {
@@ -369,20 +401,32 @@ export default App
 
 function buildViteReactConfig(useTailwind: boolean): string {
   if (useTailwind) {
-    return `import { defineConfig } from 'vite'
+    return `import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   plugins: [tailwindcss(), react()],
 })
 `;
   }
 
-  return `import { defineConfig } from 'vite'
+  return `import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   plugins: [react()],
 })
 `;
@@ -1233,6 +1277,10 @@ async function setupShadcn(answers: ScaffolderAnswers): Promise<void> {
   const template = getShadcnTemplate(answers.framework);
   if (!template) {
     return;
+  }
+
+  if (template === 'vite') {
+    await ensureShadcnImportAliases(answers.root);
   }
 
   const args = ['shadcn@latest', 'init', '-y', '-t', template, '-c', '.'];
