@@ -9,7 +9,6 @@ program
   .description('Minimal project scaffolder by Iydheko')
   .argument('[projectName]', 'name of the project')
   .option('-s, --simple', 'skip libraries, databases, auth, and deploy prompts')
-  .option('--preset <id>', 'shadcn preset id (default: nova)')
   .action((projectName?: string, options?: CliOptions) => {
     void run(projectName, options);
   });

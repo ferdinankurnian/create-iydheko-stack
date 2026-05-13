@@ -27,7 +27,6 @@ export type DeployOption = 'none' | 'cloudflare' | 'vercel' | 'netlify';
 
 export interface CliOptions {
   simple?: boolean;
-  preset?: string;
 }
 
 export interface ScaffolderAnswers {

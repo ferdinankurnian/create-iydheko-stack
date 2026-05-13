@@ -18,10 +18,9 @@ npm create iydheko-stack@0.2.0-alpha
 
 ```bash
 -s, --simple      skip libraries, databases, auth, and deploy prompts
---preset <id>     provide shadcn preset id (default: nova)
 ```
 
-Custom preset input accepts either `<id>` or `--preset <id>`.
+In the Shadcn prompt flow, Custom preset input accepts either `<id>` or `--preset <id>`.
 
 ## Frameworks
 

@@ -1414,7 +1414,6 @@ export async function run(projectNameFromArgs?: string, cliOptions: CliOptions =
 
   try {
     const simple = Boolean(cliOptions.simple);
-    const presetFromFlag = normalizeShadcnPresetInput(String(cliOptions.preset ?? ''));
 
     let projectName = (projectNameFromArgs ?? '').trim();
     if (!projectName) {
@@ -1443,18 +1442,17 @@ export async function run(projectNameFromArgs?: string, cliOptions: CliOptions =
             { title: 'Base', value: 'base' },
           ]);
 
-          shadcnPreset = presetFromFlag;
-          if (!shadcnPreset) {
-            const selectedPreset = await askSelect<'nova' | 'vega' | 'maia' | 'lyra' | 'mira' | 'luma' | 'sera' | 'custom'>(
-              'Shadcn preset?',
-              SHADCN_PRESET_CHOICES.map((choice) => ({ title: choice.title, value: choice.value })),
-              0,
+          const selectedPreset = await askSelect<'nova' | 'vega' | 'maia' | 'lyra' | 'mira' | 'luma' | 'sera' | 'custom'>(
+            'Shadcn preset?',
+            SHADCN_PRESET_CHOICES.map((choice) => ({ title: choice.title, value: choice.value })),
+            0,
+          );
+          if (selectedPreset === 'custom') {
+            shadcnPreset = normalizeShadcnPresetInput(
+              await askText('Enter shadcn preset ID (e.g. b5J65TvHO or --preset b5J65TvHO)', ''),
             );
-            if (selectedPreset === 'custom') {
-              shadcnPreset = normalizeShadcnPresetInput(await askText('Enter shadcn preset ID', ''));
-            } else {
-              shadcnPreset = selectedPreset;
-            }
+          } else {
+            shadcnPreset = selectedPreset;
           }
           if (!shadcnPreset) {
             throw new Error('Shadcn preset cannot be empty when Shadcn is enabled.');
