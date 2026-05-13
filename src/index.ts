@@ -158,6 +158,21 @@ function validateProjectName(projectName: string): string {
   return normalized;
 }
 
+function normalizeShadcnPresetInput(input: string): string {
+  const normalized = input.trim();
+  if (!normalized) {
+    return '';
+  }
+
+  const presetMatch = normalized.match(/^--preset\s+(.+)$/i);
+  if (!presetMatch) {
+    return normalized;
+  }
+
+  const presetId = presetMatch[1];
+  return presetId ? presetId.trim() : '';
+}
+
 async function runCommand(command: string, args: string[], options: RunCommandOptions = {}): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const child = spawn(command, args, {
@@ -1399,7 +1414,7 @@ export async function run(projectNameFromArgs?: string, cliOptions: CliOptions =
 
   try {
     const simple = Boolean(cliOptions.simple);
-    const presetFromFlag = String(cliOptions.preset ?? '').trim();
+    const presetFromFlag = normalizeShadcnPresetInput(String(cliOptions.preset ?? ''));
 
     let projectName = (projectNameFromArgs ?? '').trim();
     if (!projectName) {
@@ -1436,7 +1451,7 @@ export async function run(projectNameFromArgs?: string, cliOptions: CliOptions =
               0,
             );
             if (selectedPreset === 'custom') {
-              shadcnPreset = await askText('Enter shadcn preset', 'nova');
+              shadcnPreset = normalizeShadcnPresetInput(await askText('Enter shadcn preset ID', ''));
             } else {
               shadcnPreset = selectedPreset;
             }
@@ -1444,7 +1459,6 @@ export async function run(projectNameFromArgs?: string, cliOptions: CliOptions =
           if (!shadcnPreset) {
             throw new Error('Shadcn preset cannot be empty when Shadcn is enabled.');
           }
-          shadcnPreset = shadcnPreset.trim().toLowerCase();
         }
       }
     }

@@ -21,6 +21,8 @@ npm create iydheko-stack@0.2.0-alpha
 --preset <id>     provide shadcn preset id (default: nova)
 ```
 
+Custom preset input accepts either `<id>` or `--preset <id>`.
+
 ## Frameworks
 
 - Vite Vanilla
