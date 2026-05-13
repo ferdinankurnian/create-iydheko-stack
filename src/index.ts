@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
+import { parse as parseJsonc } from 'jsonc-parser';
 import path from 'path';
 import prompts from 'prompts';
 import { styleText } from 'util';
@@ -180,6 +181,14 @@ function ensureObjectRecord(value: unknown): Record<string, unknown> {
   return {};
 }
 
+function parseJsoncRecord(raw: string, fileName: string): Record<string, unknown> {
+  const parsed = parseJsonc(raw);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(`Invalid JSON object in ${fileName}.`);
+  }
+  return parsed as Record<string, unknown>;
+}
+
 async function runCommand(command: string, args: string[], options: RunCommandOptions = {}): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const child = spawn(command, args, {
@@ -256,7 +265,7 @@ async function ensureShadcnImportAliases(root: string): Promise<void> {
       }
 
       const raw = await fs.readFile(configPath, 'utf-8');
-      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      const parsed = parseJsoncRecord(raw, fileName);
       const compilerOptions = ensureObjectRecord(parsed.compilerOptions);
       const paths = ensureObjectRecord(compilerOptions.paths);
 
